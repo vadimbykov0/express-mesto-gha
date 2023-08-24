@@ -56,7 +56,7 @@ module.exports = {
           }
           res.send(card);
         })
-        .catch(() => res.status(404).send({ message: 'Карточка с данным _id не найдена' }));
+        .catch(() => res.status(400).send({ message: 'Карточка с данным _id не найдена' }));
     } else {
       res.status(400).send({ message: 'Некорректный _id карточки' });
     }
