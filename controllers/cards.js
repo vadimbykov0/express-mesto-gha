@@ -33,7 +33,7 @@ module.exports = {
             res.status(404).send({ message: 'Карточка с данным _id не найдена' });
             return;
           }
-          res.status(200).send(card);
+          res.send(card);
         })
         .catch(() => res.status(404).send({ message: 'Карточка с данным _id не найдена' }));
     } else {
@@ -54,7 +54,7 @@ module.exports = {
             res.status(404).send({ message: 'Карточка с данным _id не найдена' });
             return;
           }
-          res.status(200).send(card);
+          res.send(card);
         })
         .catch(() => res.status(404).send({ message: 'Карточка с данным _id не найдена' }));
     } else {
