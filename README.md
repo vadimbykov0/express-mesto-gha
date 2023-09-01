@@ -17,4 +17,5 @@
 `npm run dev` — запускает сервер с hot-reload
 
 ### Чеклист:
-* [Чеклист 13 спринта курса](https://code.s3.yandex.net/web-developer/checklists-pdf/new-program/checklist_13.pdf)
+* [Чеклист 13 спринта "Подготовка бэкенда"](https://code.s3.yandex.net/web-developer/checklists-pdf/new-program/checklist_13.pdf)
+* [Чеклист 14 спринта "Регистрация и авторизация на бэкенде"](https://code.s3.yandex.net/web-developer/checklists-pdf/new-program/checklist_14.pdf)

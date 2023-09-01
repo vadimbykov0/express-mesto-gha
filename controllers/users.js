@@ -1,21 +1,24 @@
+const { HTTP_STATUS_CREATED, HTTP_STATUS_OK } = require('http2').constants;
 const User = require('../models/user');
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
 
 module.exports = {
 
-  addUser(req, res) {
+  addUser(req, res, next) {
     const { name, about, avatar } = req.body;
     User.create({ name, about, avatar })
-      .then((user) => res.status(201).send(user))
+      .then((user) => res.status(HTTP_STATUS_CREATED).send(user))
       .catch((err) => {
         if (err.name === 'ValidationError') {
-          res.status(400).send({ message: err.message });
+          next(new BadRequestError(err.message));
         } else {
-          res.status(500).send({ message: 'На сервере произошла ошибка' });
+          next(err);
         }
       });
   },
 
-  editUserData(req, res) {
+  editUserData(req, res, next) {
     const { name, about } = req.body;
     User.findByIdAndUpdate(
       req.user._id,
@@ -23,19 +26,19 @@ module.exports = {
       { new: 'true', runValidators: true },
     )
       .orFail()
-      .then((user) => res.status(200).send(user))
+      .then((user) => res.status(HTTP_STATUS_OK).send(user))
       .catch((err) => {
         if (err.name === 'ValidationError') {
-          res.status(400).send({ message: err.message });
+          next(new BadRequestError(err.message));
         } else if (err.name === 'DocumentNotFoundError') {
-          res.status(404).send({ message: 'Пользователь с данным _id не найден' });
+          next(new NotFoundError(`Пользователь с данным _id: ${req.user._id} не найден`));
         } else {
-          res.status(500).send({ message: 'На сервере произошла ошибка' });
+          next(err);
         }
       });
   },
 
-  editUserAvatar(req, res) {
+  editUserAvatar(req, res, next) {
     const { avatar } = req.body;
     User.findByIdAndUpdate(
       req.user._id,
@@ -43,37 +46,37 @@ module.exports = {
       { new: 'true', runValidators: true },
     )
       .orFail()
-      .then((user) => res.status(200).send(user))
+      .then((user) => res.status(HTTP_STATUS_OK).send(user))
       .catch((err) => {
         if (err.name === 'ValidationError') {
-          res.status(400).send({ message: err.message });
+          next(new BadRequestError(err.message));
         } else if (err.name === 'DocumentNotFoundError') {
-          res.status(404).send({ message: 'Пользователь с данным _id не найден' });
+          next(new NotFoundError(`Пользователь с данным _id: ${req.user._id} не найден`));
         } else {
-          res.status(500).send({ message: 'На сервере произошла ошибка' });
+          next(err);
         }
       });
   },
 
-  getUsers(req, res) {
+  getUsers(req, res, next) {
     User.find({})
-      .then((users) => res.status(200).send(users))
-      .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
+      .then((users) => res.status(HTTP_STATUS_OK).send(users))
+      .catch(next);
   },
 
-  getUserById(req, res) {
+  getUserById(req, res, next) {
     User.findById(req.params.userId)
       .orFail()
       .then((user) => {
-        res.status(200).send(user);
+        res.status(HTTP_STATUS_OK).send(user);
       })
       .catch((err) => {
         if (err.name === 'CastError') {
-          res.status(400).send({ message: `Некорректный _id: ${req.params.userId}` });
+          next(new BadRequestError(`Некорректный _id: ${req.params.userId}`));
         } else if (err.name === 'DocumentNotFoundError') {
-          res.status(404).send({ message: `Пользователь с данным _id: ${req.params.userId} не найден` });
+          next(new NotFoundError(`Пользователь с данным _id: ${req.params.userId} не найден`));
         } else {
-          res.status(500).send({ message: 'На сервере произошла ошибка' });
+          next(err);
         }
       });
   },
