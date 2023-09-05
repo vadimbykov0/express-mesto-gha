@@ -1,11 +1,11 @@
 const router = require('express').Router();
 
-const NotFoundError = require('../errors/NotFoundError');
-
 const usersRouter = require('./users');
 const cardsRouter = require('./cards');
 const signinRouter = require('./signin');
 const signupRouter = require('./signup');
+
+const NotFoundError = require('../errors/NotFoundError');
 
 const auth = require('../middlewares/auth');
 
