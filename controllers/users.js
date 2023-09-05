@@ -1,21 +1,34 @@
 const { HTTP_STATUS_CREATED, HTTP_STATUS_OK } = require('http2').constants;
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
+const ConflictError = require('../errors/ConflictError');
 
 module.exports = {
 
-  addUser(req, res, next) {
-    const { name, about, avatar } = req.body;
-    User.create({ name, about, avatar })
-      .then((user) => res.status(HTTP_STATUS_CREATED).send(user))
-      .catch((err) => {
-        if (err.name === 'ValidationError') {
-          next(new BadRequestError(err.message));
-        } else {
-          next(err);
-        }
-      });
+  createUser(req, res, next) {
+    const {
+      name, about, avatar, email, password,
+    } = req.body;
+    bcrypt.hash(password, 10)
+      .then((hash) => User.create({
+        name, about, avatar, email, password: hash,
+      })
+        .then((user) => res.status(HTTP_STATUS_CREATED).send({
+          name: user.name, about: user.about, avatar: user.avatar, email: user.email, _id: user._id,
+        }))
+        .catch((err) => {
+          if (err.code === 11000) {
+            next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+          } else if (err.name === 'ValidationError') {
+            next(new BadRequestError(err.message));
+          } else {
+            next(err);
+          }
+        }));
   },
 
   editUserData(req, res, next) {
@@ -79,6 +92,24 @@ module.exports = {
           next(err);
         }
       });
+  },
+
+  login(req, res, next) {
+    const { email, password } = req.body;
+    return User.findUserByCredentials(email, password)
+      .then((user) => {
+        const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+        res.status(HTTP_STATUS_OK).send({ token });
+      })
+      .catch((err) => {
+        next(err);
+      });
+  },
+
+  getMeUser(req, res, next) {
+    User.findById(req.user._id)
+      .then((user) => res.status(HTTP_STATUS_OK).send(user))
+      .catch(next);
   },
 
 };

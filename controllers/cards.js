@@ -1,7 +1,9 @@
 const { HTTP_STATUS_CREATED, HTTP_STATUS_OK } = require('http2').constants;
 const Card = require('../models/card');
+
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 module.exports = {
 
@@ -84,16 +86,29 @@ module.exports = {
   },
 
   deleteCard(req, res, next) {
-    Card.findByIdAndRemove(req.params.cardId)
-      .orFail()
-      .then(() => {
-        res.status(HTTP_STATUS_OK).send({ message: 'Карточка успешно удалена' });
+    Card.findById(req.params.cardId)
+      .then((card) => {
+        if (!card.owner.equals(req.user._id)) {
+          throw new ForbiddenError('Карточка вам не принадлежит');
+        }
+        Card.deleteOne(card)
+          .orFail()
+          .then(() => {
+            res.status(HTTP_STATUS_OK).send({ message: 'Карточка успешно удалена' });
+          })
+          .catch((err) => {
+            if (err.name === 'CastError') {
+              next(new BadRequestError(`Некорректный _id карточки: ${req.params.cardId}`));
+            } else if (err.name === 'DocumentNotFoundError') {
+              next(new NotFoundError(`Карточка с данным _id: ${req.params.cardId} не найдена`));
+            } else {
+              next(err);
+            }
+          });
       })
       .catch((err) => {
-        if (err.name === 'CastError') {
-          next(new BadRequestError(`Некорректный _id карточки: ${req.params.cardId}`));
-        } else if (err.name === 'DocumentNotFoundError') {
-          next(new NotFoundError(`Карточка с данным _id: ${req.params.cardId} не найдена`));
+        if (err.name === 'TypeError') {
+          next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена`));
         } else {
           next(err);
         }
