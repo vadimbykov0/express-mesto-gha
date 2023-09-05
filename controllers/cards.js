@@ -16,10 +16,10 @@ module.exports = {
           .populate('owner')
           .then((data) => res.status(HTTP_STATUS_CREATED).send(data))
           .catch((err) => {
-            if (err.name === 'CastError') {
-              next(new BadRequestError('Некорректный _id карточки'));
-            } else if (err.name === 'DocumentNotFoundError') {
+            if (err.name === 'DocumentNotFoundError') {
               next(new NotFoundError('Карточка с данным _id не найдена'));
+            } else if (err.name === 'CastError') {
+              next(new BadRequestError('Некорректный _id карточки'));
             } else {
               next(err);
             }
@@ -46,10 +46,10 @@ module.exports = {
         res.status(HTTP_STATUS_OK).send(card);
       })
       .catch((err) => {
-        if (err.name === 'CastError') {
-          next(new BadRequestError(`Некорректный _id: ${req.params.cardId} карточки`));
-        } else if (err.name === 'DocumentNotFoundError') {
+        if (err.name === 'DocumentNotFoundError') {
           next(new NotFoundError(`Карточка с данным _id: ${req.params.cardId} не найдена`));
+        } else if (err.name === 'CastError') {
+          next(new BadRequestError(`Некорректный _id: ${req.params.cardId} карточки`));
         } else {
           next(err);
         }
@@ -68,10 +68,10 @@ module.exports = {
         res.status(HTTP_STATUS_OK).send(card);
       })
       .catch((err) => {
-        if (err.name === 'CastError') {
-          next(new BadRequestError(`Некорректный _id: ${req.params.cardId} карточки`));
-        } else if (err.name === 'DocumentNotFoundError') {
+        if (err.name === 'DocumentNotFoundError') {
           next(new NotFoundError(`Карточка с данным _id: ${req.params.cardId} не найдена`));
+        } else if (err.name === 'CastError') {
+          next(new BadRequestError(`Некорректный _id: ${req.params.cardId} карточки`));
         } else {
           next(err);
         }
@@ -97,10 +97,10 @@ module.exports = {
             res.status(HTTP_STATUS_OK).send({ message: 'Карточка успешно удалена' });
           })
           .catch((err) => {
-            if (err.name === 'CastError') {
-              next(new BadRequestError(`Некорректный _id карточки: ${req.params.cardId}`));
-            } else if (err.name === 'DocumentNotFoundError') {
+            if (err.name === 'DocumentNotFoundError') {
               next(new NotFoundError(`Карточка с данным _id: ${req.params.cardId} не найдена`));
+            } else if (err.name === 'CastError') {
+              next(new BadRequestError(`Некорректный _id карточки: ${req.params.cardId}`));
             } else {
               next(err);
             }

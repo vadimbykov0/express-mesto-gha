@@ -94,6 +94,12 @@ module.exports = {
       });
   },
 
+  getMeUser(req, res, next) {
+    User.findById(req.user._id)
+      .then((user) => res.status(HTTP_STATUS_OK).send(user))
+      .catch(next);
+  },
+
   login(req, res, next) {
     const { email, password } = req.body;
     return User.findUserByCredentials(email, password)
@@ -104,12 +110,6 @@ module.exports = {
       .catch((err) => {
         next(err);
       });
-  },
-
-  getMeUser(req, res, next) {
-    User.findById(req.user._id)
-      .then((user) => res.status(HTTP_STATUS_OK).send(user))
-      .catch(next);
   },
 
 };
