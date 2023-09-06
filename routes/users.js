@@ -1,34 +1,34 @@
-const router = require('express').Router();
+const usersRouter = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 
 const {
   getUsers,
   getUserById,
-  editUserData,
-  editUserAvatar,
-  getMeUser,
+  getCurrentUser,
+  updateCurrentUser,
+  updateAvatar,
 } = require('../controllers/users');
 
-router.get('/', getUsers);
-router.get('/me', getMeUser);
+usersRouter.get('/', getUsers);
+usersRouter.get('/me', getCurrentUser);
 
-router.get('/:userId', celebrate({
+usersRouter.get('/:userId', celebrate({
   params: Joi.object().keys({
     userId: Joi.string().length(24).hex().required(),
   }),
 }), getUserById);
 
-router.patch('/me', celebrate({
+usersRouter.patch('/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
   }),
-}), editUserData);
+}), updateCurrentUser);
 
-router.patch('/me/avatar', celebrate({
+usersRouter.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
     avatar: Joi.string().regex(/^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$/),
   }),
-}), editUserAvatar);
+}), updateAvatar);
 
-module.exports = router;
+module.exports = usersRouter;

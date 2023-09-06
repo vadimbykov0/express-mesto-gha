@@ -6,7 +6,7 @@ const NotFoundError = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
 
 module.exports = {
-  addCard(req, res, next) {
+  createCard(req, res, next) {
     const { name, link } = req.body;
     Card.create({ name, link, owner: req.user._id })
       .then((card) => {
