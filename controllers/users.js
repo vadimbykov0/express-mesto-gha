@@ -1,3 +1,5 @@
+/* Обработка ошибок mongoose.Error.ValidationError принимает err.message,
+это не дефолтный текст, а текст описсаный в схеме */
 const { HTTP_STATUS_OK, HTTP_STATUS_CREATED } = require('http2').constants;
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -15,7 +17,7 @@ module.exports.getUsers = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.getCurrentUser = (req, res, next) => {
+module.exports.getMeUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((users) => res.status(HTTP_STATUS_OK).send(users))
     .catch(next);
@@ -38,7 +40,7 @@ module.exports.getUserById = (req, res, next) => {
     });
 };
 
-module.exports.updateCurrentUser = (req, res, next) => {
+module.exports.editUserData = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: 'true', runValidators: true })
     .orFail()
@@ -54,7 +56,7 @@ module.exports.updateCurrentUser = (req, res, next) => {
     });
 };
 
-module.exports.updateAvatar = (req, res, next) => {
+module.exports.editUserAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar: req.body.avatar }, { new: 'true', runValidators: true })
     .orFail()
     .then((user) => res.status(HTTP_STATUS_OK).send(user))
@@ -69,7 +71,7 @@ module.exports.updateAvatar = (req, res, next) => {
     });
 };
 
-module.exports.createUser = (req, res, next) => {
+module.exports.addUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
