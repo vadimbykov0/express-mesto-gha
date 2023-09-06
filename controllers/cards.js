@@ -1,6 +1,6 @@
-const { HTTP_STATUS_OK, HTTP_STATUS_CREATED } = require('http2').constants;
 const mongoose = require('mongoose');
 const Card = require('../models/card');
+
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
@@ -12,10 +12,10 @@ module.exports.addCard = (req, res, next) => {
       Card.findById(card._id)
         .orFail()
         .populate('owner')
-        .then((data) => res.status(HTTP_STATUS_CREATED).send(data))
+        .then((data) => res.status(201).send(data))
         .catch((err) => {
           if (err instanceof mongoose.Error.DocumentNotFoundError) {
-            next(new NotFoundError('Карточка с указанным _id не найдена.'));
+            next(new NotFoundError('Карточка с указанным _id не найдена'));
           } else {
             next(err);
           }
@@ -33,7 +33,7 @@ module.exports.addCard = (req, res, next) => {
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .populate(['owner', 'likes'])
-    .then((cards) => res.status(HTTP_STATUS_OK).send(cards))
+    .then((cards) => res.status(200).send(cards))
     .catch(next);
 };
 
@@ -46,11 +46,11 @@ module.exports.deleteCard = (req, res, next) => {
       Card.deleteOne(card)
         .orFail()
         .then(() => {
-          res.status(HTTP_STATUS_OK).send({ message: 'Карточка удалена' });
+          res.status(200).send({ message: 'Карточка удалена' });
         })
         .catch((err) => {
           if (err instanceof mongoose.Error.DocumentNotFoundError) {
-            next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена.`));
+            next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена`));
           } else if (err instanceof mongoose.Error.CastError) {
             next(new BadRequestError(`Некорректный _id карточки: ${req.params.cardId}`));
           } else {
@@ -60,7 +60,7 @@ module.exports.deleteCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'TypeError') {
-        next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена.`));
+        next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена`));
       } else {
         next(err);
       }
@@ -72,11 +72,11 @@ module.exports.likeCard = (req, res, next) => {
     .orFail()
     .populate(['owner', 'likes'])
     .then((card) => {
-      res.status(HTTP_STATUS_OK).send(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
-        next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена.`));
+        next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена`));
       } else if (err instanceof mongoose.Error.CastError) {
         next(new BadRequestError(`Некорректный _id карточки: ${req.params.cardId}`));
       } else {
@@ -90,11 +90,11 @@ module.exports.dislikeCard = (req, res, next) => {
     .orFail()
     .populate(['owner', 'likes'])
     .then((card) => {
-      res.status(HTTP_STATUS_OK).send(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
-        next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена.`));
+        next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена`));
       } else if (err instanceof mongoose.Error.CastError) {
         next(new BadRequestError(`Некорректный _id карточки: ${req.params.cardId}`));
       } else {
