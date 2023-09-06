@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const { SECRET_KEY = 'mesto-test' } = process.env;
 const User = require('../models/user');
 
 const BadRequestError = require('../errors/BadRequestError');
@@ -100,7 +99,7 @@ module.exports = {
     const { email, password } = req.body;
     return User.findUserByCredentials(email, password)
       .then((user) => {
-        const token = jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
+        const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
         res.send({ token });
       })
       .catch((err) => {
