@@ -5,9 +5,9 @@ const jwt = require('jsonwebtoken');
 const { SECRET_KEY = 'mesto-test' } = process.env;
 const User = require('../models/user');
 
-const BadRequestError = require('../errors/BadRequestError');
-const NotFoundError = require('../errors/NotFoundError');
-const ConflictError = require('../errors/ConflictError');
+const BadRequestError = require('../errors/bad-request-error');
+const NotFoundError = require('../errors/not-found-error');
+const ConflictError = require('../errors/conflict-error');
 
 module.exports = {
   getUsers(req, res, next) {
