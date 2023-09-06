@@ -16,12 +16,6 @@ module.exports = {
       .catch(next);
   },
 
-  getCurrentUser(req, res, next) {
-    User.findById(req.user._id)
-      .then((users) => res.status(200).send(users))
-      .catch(next);
-  },
-
   getUserById(req, res, next) {
     User.findById(req.params.userId)
       .orFail()
@@ -37,6 +31,12 @@ module.exports = {
           next(err);
         }
       });
+  },
+
+  getCurrentUser(req, res, next) {
+    User.findById(req.user._id)
+      .then((users) => res.status(200).send(users))
+      .catch(next);
   },
 
   updateCurrentUser(req, res, next) {

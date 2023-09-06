@@ -39,15 +39,16 @@ module.exports = {
   },
 
   deleteCard(req, res, next) {
+    const id = req.user._id;
     Card.findById(req.params.cardId)
       .then((card) => {
-        if (!card.owner.equals(req.user._id)) {
-          throw new ForbiddenError('Карточка другого пользовател');
+        if (!card.owner.equals(id)) {
+          throw new ForbiddenError('Нет прав для удаления карточки');
         }
         Card.deleteOne(card)
           .orFail()
           .then(() => {
-            res.status(200).send({ message: 'Карточка удалена' });
+            res.status(200).send({ message: 'Карточка успешно удалена' });
           })
           .catch((err) => {
             if (err instanceof mongoose.Error.DocumentNotFoundError) {
@@ -69,7 +70,12 @@ module.exports = {
   },
 
   likeCard(req, res, next) {
-    Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
+    const { cardId } = req.params;
+    Card.findByIdAndUpdate(
+      { _id: cardId },
+      { $addToSet: { likes: req.user._id } },
+      { new: true },
+    )
       .orFail()
       .populate(['owner', 'likes'])
       .then((card) => {
@@ -87,7 +93,12 @@ module.exports = {
   },
 
   dislikeCard(req, res, next) {
-    Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
+    const { cardId } = req.params;
+    Card.findByIdAndUpdate(
+      { _id: cardId },
+      { $pull: { likes: req.user._id } },
+      { new: true },
+    )
       .orFail()
       .populate(['owner', 'likes'])
       .then((card) => {
