@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const { SECRET_KEY = 'mesto-test' } = process.env;
+const { SECRET_KEY = 'some-secret-key' } = process.env;
 const User = require('../models/user');
 
 const BadRequestError = require('../errors/bad-request-error');

@@ -6,6 +6,13 @@ const NotFoundError = require('../errors/not-found-error');
 const ForbiddenError = require('../errors/forbidden-error');
 
 module.exports = {
+  getCards(req, res, next) {
+    Card.find({})
+      .populate(['owner', 'likes'])
+      .then((cards) => res.status(200).send(cards))
+      .catch(next);
+  },
+
   createCard(req, res, next) {
     const { name, link } = req.body;
     Card.create({ name, link, owner: req.user._id })
@@ -29,13 +36,6 @@ module.exports = {
           next(err);
         }
       });
-  },
-
-  getCards(req, res, next) {
-    Card.find({})
-      .populate(['owner', 'likes'])
-      .then((cards) => res.status(200).send(cards))
-      .catch(next);
   },
 
   deleteCard(req, res, next) {
