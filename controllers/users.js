@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const { SECRET_KEY = 'some-secret-key' } = process.env;
+
 const User = require('../models/user');
 
 const BadRequestError = require('../errors/bad-request-error');
@@ -19,14 +19,12 @@ module.exports = {
   getUserById(req, res, next) {
     User.findById(req.params.userId)
       .orFail()
-      .then((user) => {
-        res.status(200).send(user);
-      })
+      .then((user) => res.status(200).send(user))
       .catch((err) => {
-        if (err instanceof mongoose.Error.CastError) {
+        if (err.name === 'CastError') {
           next(new BadRequestError(`Некорректный _id: ${req.params.userId}`));
-        } else if (err instanceof mongoose.Error.DocumentNotFoundError) {
-          next(new NotFoundError(`Пользователь по указанному _id: ${req.params.userId} не найден`));
+        } else if (err.name === 'DocumentNotFoundError') {
+          next(new NotFoundError(`Нет пользователя с таким _id: ${req.params.userId}`));
         } else {
           next(err);
         }
@@ -41,14 +39,18 @@ module.exports = {
 
   updateCurrentUser(req, res, next) {
     const { name, about } = req.body;
-    User.findByIdAndUpdate(req.user._id, { name, about }, { new: 'true', runValidators: true })
+    User.findByIdAndUpdate(
+      req.user._id,
+      { name, about },
+      { new: 'true', runValidators: true },
+    )
       .orFail()
       .then((user) => res.status(200).send(user))
       .catch((err) => {
-        if (err instanceof mongoose.Error.ValidationError) {
+        if (err.name === 'ValidationError') {
           next(new BadRequestError(err.message));
-        } else if (err instanceof mongoose.Error.DocumentNotFoundError) {
-          next(new NotFoundError(`Пользователь по указанному _id: ${req.user._id} не найден`));
+        } else if (err.name === 'DocumentNotFoundError') {
+          next(new NotFoundError(`Нет пользователя с таким _id: ${req.user._id}`));
         } else {
           next(err);
         }
@@ -56,14 +58,19 @@ module.exports = {
   },
 
   updateAvatar(req, res, next) {
-    User.findByIdAndUpdate(req.user._id, { avatar: req.body.avatar }, { new: 'true', runValidators: true })
+    const { avatar } = req.body;
+    User.findByIdAndUpdate(
+      req.user._id,
+      { avatar },
+      { new: 'true', runValidators: true },
+    )
       .orFail()
       .then((user) => res.status(200).send(user))
       .catch((err) => {
-        if (err instanceof mongoose.Error.ValidationError) {
+        if (err.name === 'ValidationError') {
           next(new BadRequestError(err.message));
-        } else if (err instanceof mongoose.Error.DocumentNotFoundError) {
-          next(new NotFoundError(`Пользователь по указанному _id: ${req.user._id} не найден`));
+        } else if (err.name === 'DocumentNotFoundError') {
+          next(new NotFoundError(`Нет пользователя с таким _id: ${req.user._id}`));
         } else {
           next(err);
         }
@@ -72,11 +79,19 @@ module.exports = {
 
   createUser(req, res, next) {
     const {
-      name, about, avatar, email, password,
+      name,
+      about,
+      avatar,
+      email,
+      password,
     } = req.body;
     bcrypt.hash(password, 10)
       .then((hash) => User.create({
-        name, about, avatar, email, password: hash,
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
       })
         .then((user) => res.status(201).send({
           name: user.name,
@@ -87,8 +102,8 @@ module.exports = {
         }))
         .catch((err) => {
           if (err.code === 11000) {
-            next(new ConflictError(`Пользователь с email: ${email} уже зарегистрирован`));
-          } else if (err instanceof mongoose.Error.ValidationError) {
+            next(new ConflictError(`Пользователь с таким email: ${email} существует`));
+          } else if (err.name === 'ValidationError') {
             next(new BadRequestError(err.message));
           } else {
             next(err);
@@ -98,9 +113,15 @@ module.exports = {
 
   login(req, res, next) {
     const { email, password } = req.body;
+
     return User.findUserByCredentials(email, password)
       .then((user) => {
-        const token = jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
+        const token = jwt.sign(
+          { _id: user._id },
+          SECRET_KEY,
+          { expiresIn: '7d' },
+        );
+
         res.send({ token });
       })
       .catch((err) => {

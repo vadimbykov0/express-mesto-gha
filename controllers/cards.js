@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const Card = require('../models/card');
 
 const BadRequestError = require('../errors/bad-request-error');
@@ -15,22 +14,25 @@ module.exports = {
 
   createCard(req, res, next) {
     const { name, link } = req.body;
-    Card.create({ name, link, owner: req.user._id })
+    const owner = req.user._id;
+    Card.create({ name, link, owner })
       .then((card) => {
         Card.findById(card._id)
           .orFail()
           .populate('owner')
           .then((data) => res.status(201).send(data))
           .catch((err) => {
-            if (err instanceof mongoose.Error.DocumentNotFoundError) {
-              next(new NotFoundError('Карточка с указанным _id не найдена'));
+            if (err.name === 'CastError') {
+              next(new BadRequestError('Некорректный _id карточки'));
+            } else if (err.name === 'DocumentNotFoundError') {
+              next(new NotFoundError('Карточка с _id не найдена'));
             } else {
               next(err);
             }
           });
       })
       .catch((err) => {
-        if (err instanceof mongoose.Error.ValidationError) {
+        if (err.name === 'ValidationError') {
           next(new BadRequestError(err.message));
         } else {
           next(err);
@@ -51,9 +53,9 @@ module.exports = {
             res.status(200).send({ message: 'Карточка успешно удалена' });
           })
           .catch((err) => {
-            if (err instanceof mongoose.Error.DocumentNotFoundError) {
+            if (err.name === 'DocumentNotFoundError') {
               next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена`));
-            } else if (err instanceof mongoose.Error.CastError) {
+            } else if (err.name === 'CastError') {
               next(new BadRequestError(`Некорректный _id карточки: ${req.params.cardId}`));
             } else {
               next(err);
@@ -82,9 +84,9 @@ module.exports = {
         res.status(200).send(card);
       })
       .catch((err) => {
-        if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        if (err.name === 'DocumentNotFoundError') {
           next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена`));
-        } else if (err instanceof mongoose.Error.CastError) {
+        } else if (err.name === 'CastError') {
           next(new BadRequestError(`Некорректный _id карточки: ${req.params.cardId}`));
         } else {
           next(err);
@@ -105,9 +107,9 @@ module.exports = {
         res.status(200).send(card);
       })
       .catch((err) => {
-        if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        if (err.name === 'DocumentNotFoundError') {
           next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена`));
-        } else if (err instanceof mongoose.Error.CastError) {
+        } else if (err.name === 'CastError') {
           next(new BadRequestError(`Некорректный _id карточки: ${req.params.cardId}`));
         } else {
           next(err);
