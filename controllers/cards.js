@@ -7,7 +7,7 @@ const ForbiddenError = require('../errors/forbidden-error');
 module.exports = {
   getCards(req, res, next) {
     Card.find({}).sort({ createdAt: -1 })
-      .then((cards) => res.status(200).send(cards))
+      .then((cards) => res.send(cards))
       .catch(next);
   },
 
@@ -41,6 +41,7 @@ module.exports = {
   deleteCard(req, res, next) {
     const id = req.user._id;
     Card.findById(req.params.cardId)
+      .orFail()
       .then((card) => {
         if (!card.owner.equals(id)) {
           throw new ForbiddenError('Нет прав для удаления карточки');
@@ -48,7 +49,7 @@ module.exports = {
         Card.deleteOne(card)
           .orFail()
           .then(() => {
-            res.status(200).send({ message: 'Карточка успешно удалена' });
+            res.send({ message: 'Карточка успешно удалена' });
           })
           .catch((err) => {
             if (err.name === 'DocumentNotFoundError') {
@@ -77,9 +78,8 @@ module.exports = {
       { new: true },
     )
       .orFail()
-      .populate(['owner', 'likes'])
       .then((card) => {
-        res.status(200).send(card);
+        res.send(card);
       })
       .catch((err) => {
         if (err.name === 'DocumentNotFoundError') {
@@ -100,9 +100,8 @@ module.exports = {
       { new: true },
     )
       .orFail()
-      .populate(['owner', 'likes'])
       .then((card) => {
-        res.status(200).send(card);
+        res.send(card);
       })
       .catch((err) => {
         if (err.name === 'DocumentNotFoundError') {

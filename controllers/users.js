@@ -12,19 +12,17 @@ const ConflictError = require('../errors/conflict-error');
 module.exports = {
   getUsers(req, res, next) {
     User.find({})
-      .then((users) => res.status(200).send(users))
+      .then((users) => res.send(users))
       .catch(next);
   },
 
   getUserById(req, res, next) {
     User.findById(req.params.userId)
-      .orFail()
-      .then((user) => res.status(200).send(user))
+      .orFail(() => new NotFoundError(`Нет пользователя с таким _id: ${req.params.userId}`))
+      .then((user) => res.send(user))
       .catch((err) => {
         if (err.name === 'CastError') {
           next(new BadRequestError(`Некорректный _id: ${req.params.userId}`));
-        } else if (err.name === 'DocumentNotFoundError') {
-          next(new NotFoundError(`Нет пользователя с таким _id: ${req.params.userId}`));
         } else {
           next(err);
         }
@@ -33,7 +31,7 @@ module.exports = {
 
   getCurrentUser(req, res, next) {
     User.findById(req.user._id)
-      .then((users) => res.status(200).send(users))
+      .then((users) => res.send(users))
       .catch(next);
   },
 
@@ -44,13 +42,11 @@ module.exports = {
       { name, about },
       { new: 'true', runValidators: true },
     )
-      .orFail()
-      .then((user) => res.status(200).send(user))
+      .orFail(() => new NotFoundError(`Нет пользователя с таким _id: ${req.user._id}`))
+      .then((user) => res.send(user))
       .catch((err) => {
         if (err.name === 'ValidationError') {
           next(new BadRequestError(err.message));
-        } else if (err.name === 'DocumentNotFoundError') {
-          next(new NotFoundError(`Нет пользователя с таким _id: ${req.user._id}`));
         } else {
           next(err);
         }
@@ -64,13 +60,11 @@ module.exports = {
       { avatar },
       { new: 'true', runValidators: true },
     )
-      .orFail()
-      .then((user) => res.status(200).send(user))
+      .orFail(() => new NotFoundError(`Нет пользователя с таким _id: ${req.user._id}`))
+      .then((user) => res.send(user))
       .catch((err) => {
         if (err.name === 'ValidationError') {
           next(new BadRequestError(err.message));
-        } else if (err.name === 'DocumentNotFoundError') {
-          next(new NotFoundError(`Нет пользователя с таким _id: ${req.user._id}`));
         } else {
           next(err);
         }
