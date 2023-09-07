@@ -6,8 +6,7 @@ const ForbiddenError = require('../errors/forbidden-error');
 
 module.exports = {
   getCards(req, res, next) {
-    Card.find({})
-      .populate(['owner', 'likes'])
+    Card.find({}).sort({ createdAt: -1 })
       .then((cards) => res.status(200).send(cards))
       .catch(next);
   },
@@ -19,7 +18,6 @@ module.exports = {
       .then((card) => {
         Card.findById(card._id)
           .orFail()
-          .populate('owner')
           .then((data) => res.status(201).send(data))
           .catch((err) => {
             if (err.name === 'CastError') {
