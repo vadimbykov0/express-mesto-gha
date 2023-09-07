@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
 const bcrypt = require('bcryptjs');
 
 const UnauthorizedError = require('../errors/unauthorized-error');
@@ -33,7 +32,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     validate: {
       validator(email) {
-        return validator.isEmail(email);
+        return /^\S+@\S+\.\S+$/.test(email);
       },
       message: (props) => `${props.value} не является email`,
     },
@@ -41,13 +40,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Поле должно быть заполнено'],
-    minlength: 8,
-    validate: {
-      validator(v) {
-        return validator.isStrongPassword(v);
-      },
-      message: (props) => `${props.value} не является надежным паролем`,
-    },
     select: false,
   },
 }, { versionKey: false });
