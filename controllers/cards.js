@@ -77,6 +77,7 @@ module.exports = {
       { new: true },
     )
       .orFail()
+      .populate(['owner', 'likes'])
       .then((card) => {
         res.status(200).send(card);
       })
@@ -99,6 +100,7 @@ module.exports = {
       { new: true },
     )
       .orFail()
+      .populate(['owner', 'likes'])
       .then((card) => {
         res.status(200).send(card);
       })
