@@ -13,15 +13,12 @@ module.exports = {
 
   createCard(req, res, next) {
     const { name, link } = req.body;
-    const owner = req.user._id;
-    Card.create({ name, link, owner })
-      .orFail()
-      .then((card) => res.status(201).send({ data: card }))
+    return Card.create({ name, link, owner: req.user._id })
+      .then((card) => Card.populate(card, { path: 'owner' }))
+      .then((populatedCard) => res.status(201).send(populatedCard))
       .catch((err) => {
         if (err.name === 'ValidationError') {
           next(new BadRequestError(err.message));
-        } else if (err.name === 'DocumentNotFoundError') {
-          next(new NotFoundError('Карточка с _id не найдена'));
         } else {
           next(err);
         }
