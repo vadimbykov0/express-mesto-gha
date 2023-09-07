@@ -15,23 +15,15 @@ module.exports = {
     const { name, link } = req.body;
     const owner = req.user._id;
     Card.create({ name, link, owner })
+      .orFail()
       .then((card) => {
-        Card.findById(card._id)
-          .orFail()
-          .then((data) => res.status(201).send(data))
-          .catch((err) => {
-            if (err.name === 'CastError') {
-              next(new BadRequestError('Некорректный _id карточки'));
-            } else if (err.name === 'DocumentNotFoundError') {
-              next(new NotFoundError('Карточка с _id не найдена'));
-            } else {
-              next(err);
-            }
-          });
+        res.status(201).send(card);
       })
       .catch((err) => {
         if (err.name === 'ValidationError') {
           next(new BadRequestError(err.message));
+        } else if (err.name === 'DocumentNotFoundError') {
+          next(new NotFoundError('Карточка с _id не найдена'));
         } else {
           next(err);
         }
