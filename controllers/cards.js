@@ -14,7 +14,8 @@ module.exports = {
 
   createCard(req, res, next) {
     const { name, link } = req.body;
-    Card.create({ name, link, owner: req.user._id })
+    const owner = req.user._id;
+    Card.create({ name, link, owner })
       .then((card) => Card.populate(card, { path: 'owner' }))
       .then((populatedCard) => res.status(201).send(populatedCard))
       .catch((err) => {
