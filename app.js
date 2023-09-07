@@ -1,9 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
 
+const limiter = require('./middlewares/limiter');
 const centralizedErrorHandler = require('./middlewares/centralized-error-handler');
 const indexRoutes = require('./routes/index');
 
@@ -11,10 +11,6 @@ const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.en
 
 const app = express();
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-});
 app.use(limiter);
 
 app.use(helmet());
