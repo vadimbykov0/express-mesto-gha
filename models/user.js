@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 const bcrypt = require('bcryptjs');
 
 const UnauthorizedError = require('../errors/unauthorized-error');
@@ -32,7 +33,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     validate: {
       validator(email) {
-        return /^\S+@\S+\.\S+$/.test(email);
+        return validator.isEmail(email);
       },
       message: (props) => `${props.value} не является email`,
     },
@@ -41,6 +42,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Поле должно быть заполнено'],
     minlength: 8,
+    validate: {
+      validator(v) {
+        return validator.isStrongPassword(v);
+      },
+      message: (props) => `${props.value} не является надежным паролем`,
+    },
     select: false,
   },
 }, { versionKey: false });
@@ -48,18 +55,11 @@ const userSchema = new mongoose.Schema({
 userSchema.statics.findUserByCredentials = function func(email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) {
+      if (!user || !bcrypt.compare(password, user.password)) {
         throw new UnauthorizedError('Неправильные почта или пароль');
       }
 
-      return bcrypt.compare(password, user.password)
-        .then((matched) => {
-          if (!matched) {
-            throw new UnauthorizedError('Неправильные почта или пароль');
-          }
-
-          return user;
-        });
+      return user;
     });
 };
 
