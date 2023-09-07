@@ -1,7 +1,7 @@
 const signInRouter = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 
-const emailRegex = require('../utils/constants');
+const { emailRegex } = require('../utils/constants');
 
 const { login } = require('../controllers/users');
 

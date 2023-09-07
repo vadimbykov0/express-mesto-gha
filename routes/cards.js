@@ -1,7 +1,7 @@
 const cardsRouter = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 
-const urlRegex = require('../utils/constants');
+const { urlRegex } = require('../utils/constants');
 
 const {
   getCards,
