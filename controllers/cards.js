@@ -62,7 +62,7 @@ module.exports = {
           });
       })
       .catch((err) => {
-        if (err.name === 'TypeError') {
+        if (err.name === 'DocumentNotFoundError') {
           next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена`));
         } else {
           next(err);
