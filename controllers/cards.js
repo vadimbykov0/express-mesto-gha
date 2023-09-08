@@ -6,7 +6,8 @@ const ForbiddenError = require('../errors/forbidden-error');
 
 module.exports = {
   getCards(req, res, next) {
-    Card.find({}).sort({ createdAt: -1 })
+    Card.find({})
+      .sort({ createdAt: -1 })
       .populate(['owner', 'likes'])
       .then((cards) => res.send(cards))
       .catch(next);
@@ -43,8 +44,6 @@ module.exports = {
           .catch((err) => {
             if (err.name === 'DocumentNotFoundError') {
               next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена`));
-            } else if (err.name === 'CastError') {
-              next(new BadRequestError(`Некорректный _id карточки: ${req.params.cardId}`));
             } else {
               next(err);
             }
@@ -53,6 +52,8 @@ module.exports = {
       .catch((err) => {
         if (err.name === 'DocumentNotFoundError') {
           next(new NotFoundError(`Карточка с _id: ${req.params.cardId} не найдена`));
+        } else if (err.name === 'CastError') {
+          next(new BadRequestError(`Некорректный _id карточки: ${req.params.cardId}`));
         } else {
           next(err);
         }

@@ -1,8 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const { SECRET_KEY = 'some-secret-key' } = process.env;
-
 const User = require('../models/user');
 
 const BadRequestError = require('../errors/bad-request-error');
@@ -30,8 +28,10 @@ module.exports = {
   },
 
   getCurrentUser(req, res, next) {
-    User.findById(req.user._id)
-      .then((users) => res.send(users))
+    const userId = req.user._id;
+    User.findById(userId)
+      .orFail(() => new NotFoundError(`Нет пользователя с таким _id: ${req.user._id}`))
+      .then((currentUser) => res.send(currentUser))
       .catch(next);
   },
 
@@ -109,11 +109,7 @@ module.exports = {
     const { email, password } = req.body;
     return User.findUserByCredentials(email, password)
       .then((user) => {
-        const token = jwt.sign(
-          { _id: user._id },
-          SECRET_KEY,
-          { expiresIn: '7d' },
-        );
+        const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
         res.send({ token });
       })
       .catch((err) => {
