@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const SALT_ROUNDS = 10;
+
 const User = require('../models/user');
 
 const BadRequestError = require('../errors/bad-request-error');
@@ -79,7 +81,7 @@ module.exports = {
       email,
       password,
     } = req.body;
-    bcrypt.hash(password, 10)
+    bcrypt.hash(password, SALT_ROUNDS)
       .then((hash) => User.create({
         name,
         about,

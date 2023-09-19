@@ -4,7 +4,9 @@ const helmet = require('helmet');
 const { errors } = require('celebrate');
 
 const limiter = require('./middlewares/limiter');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 const centralizedErrorHandler = require('./middlewares/centralized-error-handler');
+
 const indexRoutes = require('./routes/index');
 
 const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
@@ -23,11 +25,12 @@ mongoose.connect(DB_URL, {
   useUnifiedTopology: true,
 });
 
+app.use(requestLogger); // подключаем логгер запросов
 app.use('/', indexRoutes);
+app.use(errorLogger); // подключаем логгер ошибок
 
-app.use(errors());
-
-app.use(centralizedErrorHandler);
+app.use(errors()); // обработчик ошибок celebrate
+app.use(centralizedErrorHandler); // централизованный обработчик ошибок
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`); /* eslint-disable-line no-console */
